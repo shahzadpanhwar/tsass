@@ -7,6 +7,8 @@
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <!-- Google Fonts: Inter & Outfit -->
@@ -441,7 +443,26 @@
           </div>
 
           <div id="galleryManager" class="hidden border-t border-slate-200 bg-white p-5 sm:p-7">
-            <form id="galleryPostForm" onsubmit="saveGalleryPost(event)" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div id="galleryAuthPanel" class="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-5">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <p id="galleryAuthStatus" class="text-sm font-bold text-brand-navy">Admin login required</p>
+                  <p id="galleryAuthHint" class="text-[11px] text-slate-500 mt-1">Sign in with the school administrator account to add or remove gallery posts.</p>
+                </div>
+                <button type="button" id="galleryLoginBtn" onclick="toggleGalleryLogin()" class="px-5 py-2.5 rounded-lg bg-brand-navy text-white text-xs font-bold hover:bg-brand-navyLight transition-colors">
+                  <i class="fa-solid fa-lock mr-1"></i> Admin Login
+                </button>
+              </div>
+              <form id="galleryLoginForm" onsubmit="handleGalleryLogin(event)" class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input id="galleryAdminEmail" type="email" value="lumoraacademy4@gmail.com" readonly class="w-full px-4 py-3 rounded-lg border border-slate-300 bg-slate-100 text-sm text-slate-600">
+                <input id="galleryAdminPassword" type="password" required autocomplete="current-password" placeholder="Admin password" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-navy outline-none text-sm">
+                <button type="submit" class="sm:col-span-2 px-5 py-3 rounded-lg bg-brand-crimson text-white text-xs font-bold hover:bg-brand-crimsonDark transition-colors">
+                  <i class="fa-solid fa-right-to-bracket mr-1"></i> Sign In as Admin
+                </button>
+              </form>
+            </div>
+
+            <form id="galleryPostForm" onsubmit="saveGalleryPost(event)" class="hidden grid grid-cols-1 md:grid-cols-2 gap-5">
               <div class="md:col-span-2">
                 <label class="block text-xs font-bold text-slate-700 mb-1.5">Post / Event Title *</label>
                 <input id="galleryTitle" type="text" required placeholder="e.g. Introductory Session for New Students" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none text-sm">
@@ -472,7 +493,7 @@
               <div class="md:col-span-2">
                 <label class="block text-xs font-bold text-slate-700 mb-1.5">Upload Images *</label>
                 <input id="galleryImages" type="file" accept="image/*" multiple required class="w-full px-4 py-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-brand-navy file:text-white file:text-xs file:font-bold hover:file:bg-brand-navyLight">
-                <p class="text-[11px] text-slate-400 mt-1.5">You can select multiple images. Images added here are saved in this browser on this device.</p>
+                <p class="text-[11px] text-slate-400 mt-1.5">You can select multiple images. Photos are uploaded securely to the school's Supabase cloud gallery.</p>
               </div>
 
               <div class="md:col-span-2 flex flex-wrap items-center gap-3 pt-2">
@@ -1391,8 +1412,21 @@
       });
     }
 
-    // Gallery Manager: add and display school events, sessions, activities, and photos.
-    const GALLERY_STORAGE_KEY = 'successAcademyGalleryPosts';
+    // Cloud Gallery powered by Supabase.
+    const SUPABASE_URL = 'https://oejxjgzycbmsjjjdlhuc.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_S72Xsh37e-8ff_c3UQV1ug_uTbxJDZv';
+    const GALLERY_BUCKET = 'gallery-images';
+    const GALLERY_ADMIN_EMAIL = 'lumoraacademy4@gmail.com';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const categoryLabels = {
+      events: 'Events & Sessions',
+      labs: 'STEM & Labs',
+      library: 'Library',
+      sports: 'Sports & Activities',
+      arts: 'Arts & Auditorium',
+      celebrations: 'Celebrations & Special Days'
+    };
 
     function toggleGalleryManager() {
       const manager = document.getElementById('galleryManager');
@@ -1402,18 +1436,67 @@
       btn.innerHTML = isHidden
         ? '<i class="fa-solid fa-minus"></i> Close Gallery Manager'
         : '<i class="fa-solid fa-plus"></i> Add Photos & Details';
+      if (isHidden) refreshGalleryAuthUI();
     }
 
-    function getGalleryPosts() {
-      try {
-        return JSON.parse(localStorage.getItem(GALLERY_STORAGE_KEY) || '[]');
-      } catch (error) {
-        return [];
+    function toggleGalleryLogin() {
+      const form = document.getElementById('galleryLoginForm');
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) document.getElementById('galleryAdminPassword').focus();
+    }
+
+    async function refreshGalleryAuthUI(sessionOverride = null) {
+      const { data } = sessionOverride ? { data: { session: sessionOverride } } : await supabaseClient.auth.getSession();
+      const session = data.session;
+      const status = document.getElementById('galleryAuthStatus');
+      const hint = document.getElementById('galleryAuthHint');
+      const loginBtn = document.getElementById('galleryLoginBtn');
+      const loginForm = document.getElementById('galleryLoginForm');
+      const postForm = document.getElementById('galleryPostForm');
+
+      if (session && session.user && session.user.email && session.user.email.toLowerCase() === GALLERY_ADMIN_EMAIL.toLowerCase()) {
+        status.textContent = 'Admin authenticated';
+        status.className = 'text-sm font-bold text-emerald-700';
+        hint.textContent = 'Signed in as ' + session.user.email + '. You can now manage the cloud gallery.';
+        loginBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket mr-1"></i> Logout';
+        loginBtn.onclick = handleGalleryLogout;
+        loginForm.classList.add('hidden');
+        postForm.classList.remove('hidden');
+      } else {
+        status.textContent = 'Admin login required';
+        status.className = 'text-sm font-bold text-brand-navy';
+        hint.textContent = 'Sign in with the school administrator account to add or remove gallery posts.';
+        loginBtn.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Admin Login';
+        loginBtn.onclick = toggleGalleryLogin;
+        postForm.classList.add('hidden');
+        if (session && session.user) await supabaseClient.auth.signOut();
       }
     }
 
-    function saveGalleryPosts(posts) {
-      localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(posts));
+    async function handleGalleryLogin(event) {
+      event.preventDefault();
+      const password = document.getElementById('galleryAdminPassword').value;
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: GALLERY_ADMIN_EMAIL,
+        password
+      });
+      if (error) {
+        showToast('Admin login failed. Please check the password.');
+        return;
+      }
+      document.getElementById('galleryAdminPassword').value = '';
+      await refreshGalleryAuthUI(data.session);
+      showToast('Admin login successful.');
+    }
+
+    async function handleGalleryLogout() {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        showToast('Could not log out. Please try again.');
+        return;
+      }
+      await refreshGalleryAuthUI(null);
+      showToast('Admin logged out.');
     }
 
     function formatGalleryDate(dateString) {
@@ -1428,8 +1511,26 @@
       }[char]));
     }
 
-    function renderGalleryPosts() {
-      const posts = getGalleryPosts();
+    function normalizeGalleryImage(image) {
+      if (typeof image === 'string') return { url: image, path: null };
+      return { url: image?.url || '', path: image?.path || null };
+    }
+
+    async function getGalleryPosts() {
+      const { data, error } = await supabaseClient
+        .from('gallery_posts')
+        .select('*')
+        .order('event_date', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error(error);
+        return [];
+      }
+      return data || [];
+    }
+
+    async function renderGalleryPosts() {
+      const posts = await getGalleryPosts();
       const section = document.getElementById('dynamicEventsSection');
       const grid = document.getElementById('dynamicEventsGrid');
 
@@ -1439,46 +1540,51 @@
         return;
       }
 
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const isAdmin = !!(session?.user?.email && session.user.email.toLowerCase() === GALLERY_ADMIN_EMAIL.toLowerCase());
       section.classList.remove('hidden');
       grid.innerHTML = posts.map(post => {
-        const images = (post.images || []).map((src, index) => `
+        const images = (post.images || []).map(normalizeGalleryImage).filter(image => image.url).map((image, index) => `
           <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-            <img src="${src}" alt="${escapeGalleryText(post.title)} - image ${index + 1}" class="w-full h-56 object-cover hover:scale-105 transition-transform duration-500">
+            <img src="${escapeGalleryText(image.url)}" alt="${escapeGalleryText(post.title)} - image ${index + 1}" class="w-full h-56 object-cover hover:scale-105 transition-transform duration-500" loading="lazy">
           </div>
         `).join('');
+        const adminDelete = isAdmin ? `
+          <button onclick="deleteGalleryPost('${post.id}')" class="mt-4 text-[11px] font-bold text-slate-400 hover:text-red-600 transition-colors flex items-center gap-1">
+            <i class="fa-solid fa-trash-can"></i> Remove this post
+          </button>` : '';
 
         return `
           <article class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="grid grid-cols-1 ${post.images.length > 1 ? 'sm:grid-cols-2' : ''} gap-1 bg-slate-100 p-1">${images}</div>
+            <div class="grid grid-cols-1 ${(post.images || []).length > 1 ? 'sm:grid-cols-2' : ''} gap-1 bg-slate-100 p-1">${images}</div>
             <div class="p-5">
               <div class="flex items-center justify-between gap-3 mb-2">
-                <span class="text-[10px] uppercase font-bold text-brand-crimson tracking-wider">${escapeGalleryText(post.categoryLabel)}</span>
-                <span class="text-[10px] text-slate-400">${escapeGalleryText(formatGalleryDate(post.date))}</span>
+                <span class="text-[10px] uppercase font-bold text-brand-crimson tracking-wider">${escapeGalleryText(categoryLabels[post.category] || post.category || 'School Update')}</span>
+                <span class="text-[10px] text-slate-400">${escapeGalleryText(formatGalleryDate(post.event_date))}</span>
               </div>
               <h4 class="font-heading font-bold text-base text-brand-navy">${escapeGalleryText(post.title)}</h4>
               <p class="text-xs text-slate-500 mt-2 leading-relaxed">${escapeGalleryText(post.description || 'A memorable moment from The Success Academy.')}</p>
-              <button onclick="deleteGalleryPost('${post.id}')" class="mt-4 text-[11px] font-bold text-slate-400 hover:text-red-600 transition-colors flex items-center gap-1">
-                <i class="fa-solid fa-trash-can"></i> Remove this post from this browser
-              </button>
+              ${adminDelete}
             </div>
           </article>
         `;
       }).join('');
     }
 
+    function sanitizeFileName(name) {
+      return name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    }
+
     async function saveGalleryPost(event) {
       event.preventDefault();
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session || session.user.email.toLowerCase() !== GALLERY_ADMIN_EMAIL.toLowerCase()) {
+        showToast('Please log in as the school admin first.');
+        return;
+      }
 
       const title = document.getElementById('galleryTitle').value.trim();
       const category = document.getElementById('galleryCategory').value;
-      const categoryLabels = {
-        events: 'Events & Sessions',
-        labs: 'STEM & Labs',
-        library: 'Library',
-        sports: 'Sports & Activities',
-        arts: 'Arts & Auditorium',
-        celebrations: 'Celebrations & Special Days'
-      };
       const date = document.getElementById('galleryDate').value;
       const description = document.getElementById('galleryDescription').value.trim();
       const files = Array.from(document.getElementById('galleryImages').files || []);
@@ -1487,43 +1593,94 @@
         showToast('Please enter a title and select at least one image.');
         return;
       }
+      if (files.some(file => !file.type.startsWith('image/'))) {
+        showToast('Only image files are allowed.');
+        return;
+      }
+      if (files.some(file => file.size > 8 * 1024 * 1024)) {
+        showToast('Each image must be 8 MB or smaller.');
+        return;
+      }
 
-      const imagePromises = files.map(file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      }));
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-brand-gold"></i> Uploading...';
+      const uploaded = [];
 
       try {
-        const images = await Promise.all(imagePromises);
-        const posts = getGalleryPosts();
-        posts.unshift({
-          id: 'post-' + Date.now(),
+        for (const file of files) {
+          const path = `gallery/${crypto.randomUUID()}-${sanitizeFileName(file.name)}`;
+          const { error: uploadError } = await supabaseClient.storage.from(GALLERY_BUCKET).upload(path, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type
+          });
+          if (uploadError) throw uploadError;
+          const { data: publicData } = supabaseClient.storage.from(GALLERY_BUCKET).getPublicUrl(path);
+          uploaded.push({ path, url: publicData.publicUrl });
+        }
+
+        const { error: insertError } = await supabaseClient.from('gallery_posts').insert({
           title,
+          event_date: date || null,
           category,
-          categoryLabel: categoryLabels[category],
-          date,
-          description,
-          images
+          description: description || null,
+          images: uploaded
         });
-        saveGalleryPosts(posts);
-        renderGalleryPosts();
+        if (insertError) throw insertError;
+
         document.getElementById('galleryPostForm').reset();
-        showToast('Gallery post added successfully.');
+        await renderGalleryPosts();
+        showToast('Gallery post uploaded to the cloud successfully.');
       } catch (error) {
-        showToast('The images could not be added. Please try smaller image files.');
+        console.error(error);
+        if (uploaded.length) {
+          await supabaseClient.storage.from(GALLERY_BUCKET).remove(uploaded.map(item => item.path));
+        }
+        showToast('Upload failed. Check your Supabase policies and try again.');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-brand-gold"></i> Add to Gallery';
       }
     }
 
-    function deleteGalleryPost(id) {
-      const posts = getGalleryPosts().filter(post => post.id !== id);
-      saveGalleryPosts(posts);
-      renderGalleryPosts();
-      showToast('Gallery post removed from this browser.');
+    async function deleteGalleryPost(id) {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session || session.user.email.toLowerCase() !== GALLERY_ADMIN_EMAIL.toLowerCase()) {
+        showToast('Admin login required.');
+        return;
+      }
+      if (!confirm('Remove this gallery post and its images from the cloud?')) return;
+
+      const { data: post, error: readError } = await supabaseClient.from('gallery_posts').select('images').eq('id', id).single();
+      if (readError) {
+        showToast('Could not find that gallery post.');
+        return;
+      }
+
+      const paths = (post.images || []).map(normalizeGalleryImage).map(image => image.path).filter(Boolean);
+      if (paths.length) await supabaseClient.storage.from(GALLERY_BUCKET).remove(paths);
+
+      const { error } = await supabaseClient.from('gallery_posts').delete().eq('id', id);
+      if (error) {
+        console.error(error);
+        showToast('Could not remove the gallery post.');
+        return;
+      }
+      await renderGalleryPosts();
+      showToast('Gallery post removed from the cloud.');
     }
 
-    document.addEventListener('DOMContentLoaded', renderGalleryPosts);
+    document.addEventListener('DOMContentLoaded', async () => {
+      await renderGalleryPosts();
+      await refreshGalleryAuthUI();
+      supabaseClient.auth.onAuthStateChange((_event, session) => {
+        setTimeout(async () => {
+          await refreshGalleryAuthUI(session);
+          await renderGalleryPosts();
+        }, 0);
+      });
+    });
 
     // Interactive Toast Notification
     function showToast(msg) {
