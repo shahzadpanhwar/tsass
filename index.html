@@ -45,6 +45,14 @@
   </script>
 
   <style>
+    /* Mobile safety: no sideways scroll or blank strip on phones */
+    html { overflow-x: hidden; overflow-x: clip; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body { overflow-wrap: break-word; }
+    img, video, svg { max-width: 100%; }
+    @media (max-width: 767px) {
+      /* 16px fields stop iPhones from auto-zooming when a form is tapped */
+      input, select, textarea { font-size: 16px !important; }
+    }
     /* Custom Scrollbar & Aesthetics */
     ::-webkit-scrollbar {
       width: 8px;
@@ -75,17 +83,17 @@
     }
   </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-brand-gold selection:text-brand-navy">
+<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-brand-gold selection:text-brand-navy">
 
   <!-- IMPORTANT: Verify all school-specific claims, campuses, addresses, fees, events and photos with school management before public launch. -->
   <!-- Top Ticker Bar -->
   <div class="bg-brand-navy text-white text-xs sm:text-sm py-2 px-4 border-b border-white/10 relative z-40">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-      <div class="flex items-center space-x-2 overflow-hidden">
-        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-crimson text-white tracking-wider uppercase animate-pulse">
+      <div class="flex items-center space-x-2 overflow-hidden w-full md:w-auto min-w-0">
+        <span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-crimson text-white tracking-wider uppercase animate-pulse">
           <i class="fa-solid fa-bell mr-1.5 text-xs"></i> Admissions 2026-2027
         </span>
-        <div class="truncate text-slate-200">
+        <div class="truncate min-w-0 text-slate-200">
           Early Bird Scholarship assessments scheduled for this weekend. Merit seats limited across all 4 campuses!
         </div>
       </div>
@@ -253,7 +261,7 @@
               </div>
 
               <!-- Floating Metric Badge 1 -->
-              <div class="absolute -top-6 -left-6 z-20 glass-card text-brand-navy p-3.5 rounded-xl shadow-xl border border-white/60 flex items-center gap-3 animate-bounce" style="animation-duration: 4s;">
+              <div class="absolute -top-4 -left-2 sm:-top-6 sm:-left-6 z-20 glass-card text-brand-navy p-3.5 rounded-xl shadow-xl border border-white/60 flex items-center gap-3 animate-bounce" style="animation-duration: 4s;">
                 <div class="w-10 h-10 rounded-lg bg-brand-gold text-brand-navy flex items-center justify-center text-lg font-bold">
                   <i class="fa-solid fa-trophy"></i>
                 </div>
@@ -264,7 +272,7 @@
               </div>
 
               <!-- Floating Metric Badge 2 -->
-              <div class="absolute -bottom-6 -right-6 z-20 dark-glass text-white p-3.5 rounded-xl shadow-2xl border border-white/20 flex items-center gap-3">
+              <div class="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 z-20 dark-glass text-white p-3.5 rounded-xl shadow-2xl border border-white/20 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-brand-crimson text-white flex items-center justify-center text-lg">
                   <i class="fa-solid fa-user-graduate"></i>
                 </div>
@@ -650,7 +658,7 @@
 
           <!-- Quick Inquiry Form -->
           <div class="lg:col-span-6">
-            <div class="bg-white text-slate-800 p-8 rounded-2xl shadow-2xl">
+            <div class="bg-white text-slate-800 p-5 sm:p-8 rounded-2xl shadow-2xl">
               <h3 class="text-xl font-heading font-bold text-brand-navy">Send Direct Admission Inquiry</h3>
               <p class="text-xs text-slate-500 mt-1">Send your question using the form below. Please verify delivery and response arrangements with school management.</p>
 
@@ -1108,7 +1116,7 @@
   </div>
 
   <!-- Toast Notification Pop-up Container -->
-  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden bg-brand-navy text-white px-5 py-3.5 rounded-xl shadow-2xl border-l-4 border-brand-gold flex items-center gap-3 transition-all duration-300 max-w-sm">
+  <div id="toast" class="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 z-50 hidden bg-brand-navy text-white px-5 py-3.5 rounded-xl shadow-2xl border-l-4 border-brand-gold flex items-center gap-3 transition-all duration-300 max-w-sm">
     <i class="fa-solid fa-circle-check text-brand-gold text-lg shrink-0"></i>
     <div class="text-xs" id="toastMessage">Action successful!</div>
   </div>
