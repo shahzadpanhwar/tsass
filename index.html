@@ -125,15 +125,12 @@
           <a href="#home" class="text-brand-crimson hover:text-brand-navy transition-colors">Home</a>
           <a href="#about" class="hover:text-brand-crimson transition-colors">About Us</a>
           <a href="#campus-life" class="hover:text-brand-crimson transition-colors">Gallery</a>
-          <a href="#events" class="hover:text-brand-crimson transition-colors">Events</a>
+          <a href="#notices" class="hover:text-brand-crimson transition-colors">Updates</a>
           <a href="#contact" class="hover:text-brand-crimson transition-colors">Contact</a>
         </nav>
 
         <!-- Header CTA Actions -->
         <div class="hidden sm:flex items-center space-x-3">
-          <button onclick="openPortalModal()" class="px-4 py-2 text-xs font-bold text-brand-navy bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-2 border border-slate-200">
-            <i class="fa-solid fa-user-lock text-brand-crimson"></i> Portal Login
-          </button>
           <button onclick="openAdmissionModal()" class="px-5 py-2 text-xs font-bold text-white bg-brand-crimson hover:bg-brand-crimsonDark rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
             <span>Apply Now</span>
             <i class="fa-solid fa-arrow-right text-[11px]"></i>
@@ -156,13 +153,10 @@
         <a href="#home" onclick="toggleMobileMenu()" class="p-2 hover:bg-slate-50 rounded-lg text-brand-crimson">Home</a>
         <a href="#about" onclick="toggleMobileMenu()" class="p-2 hover:bg-slate-50 rounded-lg">About Us</a>
         <a href="#campus-life" onclick="toggleMobileMenu()" class="p-2 hover:bg-slate-50 rounded-lg">Gallery</a>
-        <a href="#events" onclick="toggleMobileMenu()" class="p-2 hover:bg-slate-50 rounded-lg">Upcoming Events</a>
+        <a href="#notices" onclick="toggleMobileMenu()" class="p-2 hover:bg-slate-50 rounded-lg">Updates</a>
         <a href="#contact" onclick="toggleMobileMenu()" class="p-2 hover:bg-slate-50 rounded-lg">Contact Us</a>
       </div>
       <div class="pt-4 border-t border-slate-100 flex flex-col gap-2.5">
-        <button onclick="openPortalModal(); toggleMobileMenu();" class="w-full py-2.5 text-center text-xs font-bold text-brand-navy bg-slate-100 rounded-lg flex items-center justify-center gap-2">
-          <i class="fa-solid fa-user-lock text-brand-crimson"></i> Parent / Student Portal
-        </button>
         <button onclick="openAdmissionModal(); toggleMobileMenu();" class="w-full py-2.5 text-center text-xs font-bold text-white bg-brand-crimson rounded-lg shadow flex items-center justify-center gap-2">
           <i class="fa-solid fa-file-signature"></i> Online Admission Form
         </button>
@@ -717,7 +711,7 @@
   <!-- Modern School Footer -->
   <footer class="bg-brand-navy text-slate-300 border-t border-white/10 text-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         
         <!-- Col 1: Brand Info -->
         <div class="lg:col-span-2 space-y-4">
@@ -735,24 +729,10 @@
           </div>
         </div>
 
-        <!-- Col 2: Academics -->
+        <!-- Col 3: Quick Links -->
         <div class="space-y-3">
-          <h5 class="text-white font-bold uppercase tracking-wider text-xs font-heading">Curriculum Wings</h5>
+          <h5 class="text-white font-bold uppercase tracking-wider text-xs font-heading">Quick Links</h5>
           <ul class="space-y-2 text-slate-400">
-            <li><a href="#campus-life" class="hover:text-brand-gold transition-colors">Early Montessori</a></li>
-            <li><a href="#campus-life" class="hover:text-brand-gold transition-colors">Primary Wing (1-5)</a></li>
-            <li><a href="#campus-life" class="hover:text-brand-gold transition-colors">Middle School (6-8)</a></li>
-            <li><a href="#campus-life" class="hover:text-brand-gold transition-colors">Cambridge O Levels</a></li>
-            <li><a href="#campus-life" class="hover:text-brand-gold transition-colors">Cambridge A Levels / F.Sc</a></li>
-          </ul>
-        </div>
-
-        <!-- Col 3: Quick Portals -->
-        <div class="space-y-3">
-          <h5 class="text-white font-bold uppercase tracking-wider text-xs font-heading">Portals & Quick Links</h5>
-          <ul class="space-y-2 text-slate-400">
-            <li><a href="javascript:void(0)" onclick="openPortalModal()" class="hover:text-brand-gold transition-colors">Parent Portal Login</a></li>
-            <li><a href="javascript:void(0)" onclick="openPortalModal()" class="hover:text-brand-gold transition-colors">Student Grades System</a></li>
             <li><a href="javascript:void(0)" onclick="openAdmissionModal()" class="hover:text-brand-gold transition-colors">Admission Registration</a></li>
             <li><a href="javascript:void(0)" onclick="openVisitModal()" class="hover:text-brand-gold transition-colors">Schedule Campus Visit</a></li>
             <li><a href="#about" class="hover:text-brand-gold transition-colors">Leadership & Faculty</a></li>
@@ -946,126 +926,6 @@
     </div>
   </div>
 
-  <!-- MODAL 2: Student & Parent Portal (With Interactive Mock Dashboard) -->
-  <div id="portalModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-100 transition-all">
-      
-      <!-- Portal Header -->
-      <div class="bg-brand-navy p-5 text-white flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-brand-gold text-brand-navy flex items-center justify-center font-bold">
-            <i class="fa-solid fa-shield-cat"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-heading font-bold">Success Academy Academic Portal</h3>
-            <p class="text-[11px] text-slate-300">Unified Parent & Student Information System (SIS)</p>
-          </div>
-        </div>
-        <button onclick="closePortalModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-
-      <!-- Portal Toggle: Login vs Mock Live View -->
-      <div class="border-b border-slate-200 bg-slate-50 flex">
-        <button onclick="togglePortalView('login')" id="btnPortalLoginTab" class="w-1/2 py-2.5 text-xs font-bold border-b-2 border-brand-navy text-brand-navy bg-white">
-          Secure Portal Login
-        </button>
-        <button onclick="togglePortalView('preview')" id="btnPortalDemoTab" class="w-1/2 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800">
-          Demo Student Dashboard View
-        </button>
-      </div>
-
-      <!-- Tab View 1: Login Form -->
-      <div id="portalLoginView" class="p-6">
-        <form onsubmit="handlePortalLogin(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Student Roll Number or Parent ID *</label>
-            <div class="relative">
-              <span class="absolute left-3 top-2.5 text-slate-400 text-xs"><i class="fa-solid fa-id-card"></i></span>
-              <input type="text" required value="SA-2024-8841" class="w-full text-xs pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
-            </div>
-            <span class="text-[10px] text-slate-400">Sample Demo ID: SA-2024-8841</span>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Security PIN / Password *</label>
-            <div class="relative">
-              <span class="absolute left-3 top-2.5 text-slate-400 text-xs"><i class="fa-solid fa-lock"></i></span>
-              <input type="password" required value="••••••••" class="w-full text-xs pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between text-xs">
-            <label class="flex items-center gap-2 text-slate-600">
-              <input type="checkbox" checked class="accent-brand-navy rounded"> Remember device
-            </label>
-            <a href="javascript:void(0)" onclick="showToast('Password reset link sent to registered Guardian mobile.')" class="text-brand-crimson hover:underline">Forgot password?</a>
-          </div>
-
-          <button type="submit" class="w-full py-2.5 bg-brand-navy hover:bg-brand-navyLight text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
-            <i class="fa-solid fa-right-to-bracket text-brand-gold"></i> Authenticate & Enter Portal
-          </button>
-        </form>
-      </div>
-
-      <!-- Tab View 2: Mock Student Dashboard -->
-      <div id="portalDemoView" class="p-6 hidden space-y-4">
-        <!-- Student Info Header -->
-        <div class="flex items-center justify-between bg-slate-100 p-3 rounded-xl">
-          <div class="flex items-center gap-3">
-            <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=120&auto=format&fit=crop" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow">
-            <div>
-              <h4 class="font-bold text-sm text-brand-navy">Muhammad Daniyal</h4>
-              <p class="text-[11px] text-slate-500">Grade 9 (Cambridge O-Level) | Roll # SA-8841</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 text-[11px] font-bold">Active Enrolled</span>
-        </div>
-
-        <!-- Quick Metrics -->
-        <div class="grid grid-cols-3 gap-3 text-center">
-          <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl">
-            <div class="text-[10px] uppercase text-blue-700 font-bold">Attendance</div>
-            <div class="text-lg font-extrabold text-blue-900 mt-0.5">97.8%</div>
-            <div class="text-[9px] text-blue-600">Present (Term 1)</div>
-          </div>
-          <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl">
-            <div class="text-[10px] uppercase text-amber-700 font-bold">Term GPA</div>
-            <div class="text-lg font-extrabold text-amber-900 mt-0.5">3.94 / 4.0</div>
-            <div class="text-[9px] text-amber-700">Rank #2 in Class</div>
-          </div>
-          <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
-            <div class="text-[10px] uppercase text-emerald-700 font-bold">Challan Fee</div>
-            <div class="text-lg font-extrabold text-emerald-900 mt-0.5">PAID</div>
-            <div class="text-[9px] text-emerald-600">Oct 2026 Cleared</div>
-          </div>
-        </div>
-
-        <!-- Upcoming Homework & Exams -->
-        <div class="border border-slate-200 rounded-xl p-3.5 space-y-2 text-xs">
-          <div class="font-bold text-slate-800 flex justify-between">
-            <span>Recent Assignments & Quizzes</span>
-            <span class="text-brand-crimson text-[11px] cursor-pointer" onclick="showToast('Loading syllabus schedule...')">View Syllabus</span>
-          </div>
-          <div class="flex justify-between items-center py-1 border-b border-slate-100">
-            <span><i class="fa-solid fa-code text-slate-400 mr-2"></i> Computer Science: Python Functions</span>
-            <span class="text-emerald-600 font-semibold">Submitted (A)</span>
-          </div>
-          <div class="flex justify-between items-center py-1">
-            <span><i class="fa-solid fa-flask text-slate-400 mr-2"></i> Chemistry: Stoichiometry Lab Report</span>
-            <span class="text-amber-600 font-semibold">Due Monday</span>
-          </div>
-        </div>
-
-        <button onclick="showToast('Official Term Report Card PDF downloaded successfully.')" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2">
-          <i class="fa-solid fa-download text-brand-gold"></i> Download Term Progress Card (PDF)
-        </button>
-      </div>
-
-    </div>
-  </div>
-
   <!-- MODAL 3: Schedule a Campus Visit Modal -->
   <div id="visitModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
@@ -1146,17 +1006,6 @@
       document.body.style.overflow = 'auto';
     }
 
-    // Modal Triggers: Portal Login
-    function openPortalModal() {
-      document.getElementById('portalModal').classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-      togglePortalView('login');
-    }
-    function closePortalModal() {
-      document.getElementById('portalModal').classList.add('hidden');
-      document.body.style.overflow = 'auto';
-    }
-
     // Modal Triggers: Campus Visit
     function openVisitModal() {
       document.getElementById('visitModal').classList.remove('hidden');
@@ -1212,26 +1061,6 @@
         s3.classList.remove('hidden');
         i3.className = 'flex items-center gap-2 text-brand-crimson font-bold';
         i3.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-brand-crimson text-white flex items-center justify-center text-[10px]';
-      }
-    }
-
-    // Portal Tab Switcher (Login vs Sample Dashboard)
-    function togglePortalView(view) {
-      const loginView = document.getElementById('portalLoginView');
-      const demoView = document.getElementById('portalDemoView');
-      const btnLogin = document.getElementById('btnPortalLoginTab');
-      const btnDemo = document.getElementById('btnPortalDemoTab');
-
-      if (view === 'login') {
-        loginView.classList.remove('hidden');
-        demoView.classList.add('hidden');
-        btnLogin.className = 'w-1/2 py-2.5 text-xs font-bold border-b-2 border-brand-navy text-brand-navy bg-white';
-        btnDemo.className = 'w-1/2 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800';
-      } else {
-        loginView.classList.add('hidden');
-        demoView.classList.remove('hidden');
-        btnDemo.className = 'w-1/2 py-2.5 text-xs font-bold border-b-2 border-brand-navy text-brand-navy bg-white';
-        btnLogin.className = 'w-1/2 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800';
       }
     }
 
@@ -1676,12 +1505,6 @@
       showToast("Thank you. Your visit request has been prepared. Please contact the school to confirm the date and time.");
     }
 
-    function handlePortalLogin(e) {
-      e.preventDefault();
-      togglePortalView('preview');
-      showToast("The parent/student portal is a preview only and is not connected to a real account system yet.");
-    }
-
     function handleNewsletter(e) {
       e.preventDefault();
       showToast("Newsletter signup is not connected yet. Please contact the school for official updates.");
@@ -1708,7 +1531,6 @@
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeAdmissionModal();
-        closePortalModal();
         closeVisitModal();
       }
     });
