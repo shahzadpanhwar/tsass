@@ -743,11 +743,15 @@
         <div class="space-y-3">
           <h5 class="text-white font-bold uppercase tracking-wider text-xs font-heading">Newsletter</h5>
           <p class="text-[11px] text-slate-400">Receive monthly academic magazines and scholarship updates.</p>
-          <form onsubmit="handleNewsletter(event)" class="space-y-2">
-            <input type="email" required placeholder="Enter parent email" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-brand-gold">
-            <button type="submit" class="w-full py-2 bg-brand-gold hover:bg-yellow-500 text-brand-navy font-bold rounded-lg text-xs transition-colors">
+          <form id="newsletterForm" onsubmit="handleNewsletter(event)" class="space-y-2" novalidate>
+            <label for="newsletterEmail" class="sr-only">Parent email address</label>
+            <input id="newsletterEmail" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="Enter parent email" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-brand-gold">
+            <!-- Spam trap: real visitors never see or fill this field -->
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+            <button id="newsletterBtn" type="submit" class="w-full py-2 bg-brand-gold hover:bg-yellow-500 text-brand-navy font-bold rounded-lg text-xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
               Subscribe
             </button>
+            <p class="text-[10px] text-slate-500">By subscribing, you agree to receive school updates by email.</p>
           </form>
         </div>
 
@@ -1505,10 +1509,52 @@
       showToast("Thank you. Your visit request has been prepared. Please contact the school to confirm the date and time.");
     }
 
-    function handleNewsletter(e) {
+    // Newsletter signup: saves the email to Supabase (table: newsletter_subscribers)
+    const NEWSLETTER_TABLE = 'newsletter_subscribers';
+    let newsletterBusy = false;
+    async function handleNewsletter(e) {
       e.preventDefault();
-      showToast("Newsletter signup is not connected yet. Please contact the school for official updates.");
-      e.target.reset();
+      if (newsletterBusy) return;
+      const form = e.target;
+      const input = form.querySelector('input[name="email"]');
+      const trap = form.querySelector('input[name="website"]');
+      const btn = form.querySelector('button[type="submit"]');
+      const email = (input.value || '').trim().toLowerCase();
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+        showToast("Please enter a valid email address.");
+        input.focus();
+        return;
+      }
+      // Bots fill the hidden field: pretend it worked, save nothing
+      if (trap && trap.value) {
+        showToast("Thank you! You are now subscribed to school updates.");
+        form.reset();
+        return;
+      }
+
+      newsletterBusy = true;
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Subscribing…';
+      try {
+        const { error } = await supabaseClient.from(NEWSLETTER_TABLE).insert({ email, source: 'website-footer' });
+        // 23505 = already subscribed; shown as success so emails on the list are never revealed
+        if (error && error.code !== '23505') {
+          console.warn('Newsletter signup failed:', error.message);
+          showToast("Subscription could not be completed. Please try again later or contact the school.");
+        } else {
+          showToast("Thank you! You are now subscribed to school updates.");
+          form.reset();
+        }
+      } catch (err) {
+        console.warn('Newsletter signup failed:', err);
+        showToast("Subscription could not be completed. Please check your internet connection and try again.");
+      } finally {
+        newsletterBusy = false;
+        btn.disabled = false;
+        btn.textContent = label;
+      }
     }
 
     function rsvpEvent(eventName) {
