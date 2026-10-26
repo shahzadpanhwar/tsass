@@ -2,11 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- Private page: keep out of search engines and never send this address to other sites -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#0b1f42">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="School Admin">
   <title>School Admin</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -36,6 +43,10 @@
     html { overflow-x: hidden; overflow-x: clip; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body { overflow-wrap: break-word; }
     img { max-width: 100%; }
+    button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    #appHeader { padding-top: env(safe-area-inset-top); }
+    #bottomNav { padding-bottom: env(safe-area-inset-bottom); }
+    #loginView { padding-top: max(1rem, env(safe-area-inset-top)); }
     @media (max-width: 767px) {
       input, select, textarea { font-size: 16px !important; }
     }
@@ -65,6 +76,7 @@
         <button id="loginBtn" type="submit" class="w-full py-3 rounded-lg bg-brand-crimson hover:bg-brand-crimsonDark text-white text-sm font-bold transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
           <i class="fa-solid fa-right-to-bracket mr-1"></i> Sign in
         </button>
+        <button type="button" class="install-btn hidden w-full py-3 rounded-lg bg-brand-gold/15 text-brand-navy text-sm font-bold border border-brand-gold/40"><i class="fa-solid fa-download mr-1"></i> Install this app on your phone</button>
         <a href="index.html" class="block text-center text-xs text-slate-500 hover:text-brand-navy">&larr; Back to school website</a>
       </form>
     </div>
@@ -72,7 +84,7 @@
 
   <!-- ===================== DASHBOARD ===================== -->
   <div id="dashView" class="hidden">
-    <header class="bg-brand-navy text-white sticky top-0 z-30 shadow">
+    <header id="appHeader" class="bg-brand-navy text-white sticky top-0 z-30 shadow">
       <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <span class="w-9 h-9 rounded-lg bg-white/10 text-brand-gold flex items-center justify-center shrink-0"><i class="fa-solid fa-screwdriver-wrench"></i></span>
@@ -82,15 +94,16 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <a href="index.html" target="_blank" rel="noopener" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> View website</a>
-          <button id="logoutBtn" type="button" class="px-3 py-2 rounded-lg bg-brand-crimson hover:bg-brand-crimsonDark text-xs font-bold transition-colors"><i class="fa-solid fa-right-from-bracket mr-1"></i> Sign out</button>
+          <button type="button" class="install-btn hidden px-3 py-2 rounded-lg bg-brand-gold text-brand-navy text-xs font-bold"><i class="fa-solid fa-download sm:mr-1"></i><span class="hidden sm:inline"> Install app</span></button>
+          <a href="index.html" target="_blank" rel="noopener" aria-label="View website" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors"><i class="fa-solid fa-arrow-up-right-from-square sm:mr-1"></i><span class="hidden sm:inline"> View website</span></a>
+          <button id="logoutBtn" type="button" aria-label="Sign out" class="px-3 py-2 rounded-lg bg-brand-crimson hover:bg-brand-crimsonDark text-xs font-bold transition-colors"><i class="fa-solid fa-right-from-bracket sm:mr-1"></i><span class="hidden sm:inline"> Sign out</span></button>
         </div>
       </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-6">
+    <main class="max-w-6xl mx-auto px-4 py-6 pb-28 sm:pb-6">
       <!-- Tabs -->
-      <nav class="flex flex-wrap gap-2 mb-6" aria-label="Admin sections">
+      <nav class="hidden sm:flex flex-wrap gap-2 mb-6" aria-label="Admin sections">
         <button type="button" data-tab="notices" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-bullhorn mr-1.5"></i> Notices</button>
         <button type="button" data-tab="gallery" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-images mr-1.5"></i> Gallery</button>
         <button type="button" data-tab="subscribers" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-envelope-open-text mr-1.5"></i> Subscribers</button>
@@ -215,10 +228,17 @@
         </div>
       </section>
     </main>
+
+    <!-- Phone app bottom navigation -->
+    <nav id="bottomNav" class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 grid grid-cols-3" aria-label="Admin sections">
+      <button type="button" data-tab="notices" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-bullhorn text-lg"></i>Notices</button>
+      <button type="button" data-tab="gallery" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-images text-lg"></i>Gallery</button>
+      <button type="button" data-tab="subscribers" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-envelope-open-text text-lg"></i>Subscribers</button>
+    </nav>
   </div>
 
   <!-- Toast -->
-  <div id="toast" role="status" aria-live="polite" class="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 z-50 hidden bg-brand-navy text-white text-sm px-5 py-3 rounded-xl shadow-2xl sm:max-w-sm border border-white/10">
+  <div id="toast" role="status" aria-live="polite" class="fixed bottom-24 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 z-50 hidden bg-brand-navy text-white text-sm px-5 py-3 rounded-xl shadow-2xl sm:max-w-sm border border-white/10">
     <span id="toastMsg"></span>
   </div>
 
@@ -326,8 +346,11 @@
         b.className = 'tab-btn px-4 py-2.5 rounded-lg text-sm font-bold ' +
           (on ? 'bg-brand-navy text-white shadow' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50');
       });
+      document.querySelectorAll('.bnav-btn').forEach(b => {
+        b.className = 'bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold ' + (b.dataset.tab === name ? 'text-brand-crimson' : 'text-slate-400');
+      });
     }
-    document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+    document.querySelectorAll('.tab-btn, .bnav-btn').forEach(b => b.addEventListener('click', () => { switchTab(b.dataset.tab); window.scrollTo(0, 0); }));
 
     // ------------------------------------------------------------------
     // Notices
@@ -576,6 +599,22 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
+
+    // ------------------------------------------------------------------
+    // Installable app
+    // ------------------------------------------------------------------
+    let installEvent = null;
+    const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    const onIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const showInstall = on => document.querySelectorAll('.install-btn').forEach(b => b.classList.toggle('hidden', !on));
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; showInstall(!isStandalone); });
+    window.addEventListener('appinstalled', () => { installEvent = null; showInstall(false); toast('App installed. Open it from your home screen.'); });
+    if (onIos && !isStandalone) showInstall(true);
+    document.querySelectorAll('.install-btn').forEach(b => b.addEventListener('click', async () => {
+      if (installEvent) { installEvent.prompt(); await installEvent.userChoice; installEvent = null; showInstall(false); }
+      else toast('On iPhone: tap the Share button, then "Add to Home Screen".');
+    }));
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
     // ------------------------------------------------------------------
     // Start
