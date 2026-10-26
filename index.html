@@ -473,6 +473,7 @@
                 <input type="hidden" name="_subject" value="New Parent Inquiry - The Success Academy">
                 <input type="hidden" name="_template" value="table">
                 <input type="hidden" name="_captcha" value="false">
+                <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Guardian / Parent Name *</label>
@@ -618,6 +619,7 @@
       <form id="admissionForm" action="https://formsubmit.co/lumoraacademy4@gmail.com" method="POST" class="p-6">
         <input type="hidden" name="_subject" value="New Online Admission Application - The Success Academy">
         <input type="hidden" name="_captcha" value="false">
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
         <input type="hidden" name="_template" value="table">
         <input type="hidden" name="_formtype" value="Online Admission Application">
         
@@ -751,29 +753,33 @@
         </button>
       </div>
 
-      <form onsubmit="handleVisitSubmit(event)" class="p-6 space-y-4">
+      <form id="visitForm" class="p-6 space-y-4">
+        <input type="hidden" name="_subject" value="New Campus Visit Request - The Success Academy">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Your Full Name *</label>
-          <input type="text" required placeholder="Parent or Student name" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
+          <input type="text" name="Name" required placeholder="Parent or Student name" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number (For Confirmation SMS) *</label>
-          <input type="tel" required placeholder="0300-1234567" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
+          <input type="tel" name="Phone" required placeholder="0300-1234567" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Select Campus</label>
-          <select class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
+          <select name="Campus" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
             <option value="Confirm with school">Please contact the school to confirm campus availability</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Preferred Date</label>
-            <input type="date" required class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
+            <input type="date" name="Preferred Date" required class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Time Slot</label>
-            <select class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
+            <select name="Time Slot" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-navy">
               <option>10:00 AM Morning</option>
               <option>12:00 PM Mid-day</option>
               <option>02:30 PM Afternoon</option>
@@ -1029,22 +1035,85 @@
       }, 4000);
     }
 
-    // Form Handlers
-    function handleAdmissionSubmit(e) {
-      // Admission form is submitted directly to FormSubmit and delivered to
-      // lumoraacademy4@gmail.com. Kept for compatibility with older links/scripts.
+    // Form Handlers: the enquiry, admission and visit forms are sent to the school inbox
+    // through FormSubmit without leaving this page (so visitors never land on FormSubmit's own page).
+    const SCHOOL_FORM_EMAIL = 'lumoraacademy4@gmail.com'; // change here (and in the two form "action" links) when the new school email is ready
+    const SCHOOL_FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + SCHOOL_FORM_EMAIL;
+    const formsBusy = {};
+
+    async function sendFormToSchool(form, key) {
+      if (formsBusy[key]) return { ok: false, busy: true };
+      const trap = form.querySelector('input[name="_honey"]');
+      if (trap && trap.value) return { ok: true }; // a bot filled the hidden field: pretend it worked, send nothing
+      const payload = {};
+      new FormData(form).forEach((value, name) => { payload[name] = value; });
+      formsBusy[key] = true;
+      const btn = form.querySelector('button[type="submit"]');
+      const original = btn ? btn.innerHTML : '';
+      if (btn) { btn.disabled = true; btn.innerHTML = 'Sending…'; }
+      try {
+        const res = await fetch(SCHOOL_FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        let data = null;
+        try { data = await res.json(); } catch (_) {}
+        const ok = !!(res.ok && data && (data.success === true || data.success === 'true'));
+        if (!ok) console.warn('Form was not accepted:', data);
+        return { ok, message: data && data.message ? String(data.message) : '' };
+      } catch (err) {
+        console.warn('Form could not be sent:', err);
+        return { ok: false, message: '' };
+      } finally {
+        formsBusy[key] = false;
+        if (btn) { btn.disabled = false; btn.innerHTML = original; }
+      }
     }
 
-    function handleInquirySubmit(e) {
-      // Kept for compatibility with older markup. New inquiry form submits to FormSubmit.
-      // Do not show a success message unless the submission service actually accepts the form.
+    function formFailureMessage(result) {
+      if (/activat/i.test(result.message || '')) {
+        return "This form needs a one-time activation. The school email owner must click the activation link FormSubmit sent to the inbox, then try again.";
+      }
+      return "Sorry, your message could not be sent. Please try again, or call the school helpline +92 333 2967949.";
     }
 
-    function handleVisitSubmit(e) {
+    async function handleInquirySubmit(e) {
       e.preventDefault();
-      closeVisitModal();
-      showToast("Thank you. Your visit request has been prepared. Please contact the school to confirm the date and time.");
+      const form = e.target;
+      const result = await sendFormToSchool(form, 'inquiry');
+      if (result.busy) return;
+      if (!result.ok) { showToast(formFailureMessage(result)); return; }
+      form.reset();
+      showToast("Thank you! Your inquiry has been sent. The school will contact you soon.");
     }
+
+    async function handleAdmissionSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const result = await sendFormToSchool(form, 'admission');
+      if (result.busy) return;
+      if (!result.ok) { showToast(formFailureMessage(result)); return; }
+      closeAdmissionModal();
+      form.reset();
+      goToStep(1);
+      showToast("Thank you! Your admission application has been received. The school will contact you soon.");
+    }
+
+    async function handleVisitSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const result = await sendFormToSchool(form, 'visit');
+      if (result.busy) return;
+      if (!result.ok) { showToast(formFailureMessage(result)); return; }
+      closeVisitModal();
+      form.reset();
+      showToast("Thank you! Your visit request has been sent. The school will contact you to confirm the date and time.");
+    }
+
+    document.getElementById('inquiryForm').addEventListener('submit', handleInquirySubmit);
+    document.getElementById('admissionForm').addEventListener('submit', handleAdmissionSubmit);
+    document.getElementById('visitForm').addEventListener('submit', handleVisitSubmit);
 
     // Newsletter signup: saves the email to Supabase (table: newsletter_subscribers)
     const NEWSLETTER_TABLE = 'newsletter_subscribers';
