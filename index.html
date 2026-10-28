@@ -246,7 +246,7 @@
                      loading="eager" />
                 <div class="absolute inset-0 bg-gradient-to-t from-brand-navy/80 via-transparent to-transparent"></div>
                 <div class="absolute bottom-4 left-4 right-4 text-white">
-                  <span class="bg-brand-crimson text-white text-[11px] font-bold px-2 py-0.5 rounded uppercase">Our Campus</span>
+                  <span class="bg-brand-crimson text-white text-[11px] font-bold px-2 py-0.5 rounded uppercase">Main Campus</span>
                   <p class="text-xs text-slate-200 mt-1">A modern learning environment designed to inspire excellence, growth, and a brighter future.</p>
                 </div>
               </div>
@@ -276,9 +276,9 @@
           </div>
 
           <div class="pt-4 md:pt-0">
-            <div class="font-heading font-extrabold text-3xl sm:text-4xl text-brand-navy tracking-tight" id="counter3">1</div>
-            <p class="text-xs sm:text-sm font-semibold text-brand-crimson uppercase tracking-wider mt-1">Dedicated School Campus</p>
-            <p class="text-xs text-slate-500 mt-0.5">One campus, one learning community</p>
+            <div class="font-heading font-extrabold text-3xl sm:text-4xl text-brand-navy tracking-tight" id="counter3">2</div>
+            <p class="text-xs sm:text-sm font-semibold text-brand-crimson uppercase tracking-wider mt-1">Dedicated School Campuses</p>
+            <p class="text-xs text-slate-500 mt-0.5">Two campuses, one learning community</p>
           </div>
 
           <div class="pt-4 md:pt-0">
@@ -1032,34 +1032,55 @@
     const SCHOOL_FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + SCHOOL_FORM_EMAIL;
     const formsBusy = {};
 
-    async function sendFormToSchool(form, key) {
-      if (formsBusy[key]) return { ok: false, busy: true };
+    // FormSubmit can take a long time to answer (it replies only after it has processed and emailed the form).
+    // Visitors wait at most FORM_WAIT_MS: after that we confirm "being sent" while the request keeps running
+    // in the background (keepalive lets it finish even if the tab is closed) and we only speak up again if it fails.
+    const FORM_WAIT_MS = 4000;
+
+    function sendFormToSchool(form, key) {
+      if (formsBusy[key]) return Promise.resolve({ ok: false, busy: true });
       const trap = form.querySelector('input[name="_honey"]');
-      if (trap && trap.value) return { ok: true }; // a bot filled the hidden field: pretend it worked, send nothing
+      if (trap && trap.value) return Promise.resolve({ ok: true }); // a bot filled the hidden field: pretend it worked, send nothing
       const payload = {};
       new FormData(form).forEach((value, name) => { payload[name] = value; });
       formsBusy[key] = true;
       const btn = form.querySelector('button[type="submit"]');
       const original = btn ? btn.innerHTML : '';
       if (btn) { btn.disabled = true; btn.innerHTML = 'Sending…'; }
-      try {
-        const res = await fetch(SCHOOL_FORM_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      const restore = () => { formsBusy[key] = false; if (btn) { btn.disabled = false; btn.innerHTML = original; } };
+
+      const request = fetch(SCHOOL_FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).then(async res => {
         let data = null;
         try { data = await res.json(); } catch (_) {}
         const ok = !!(res.ok && data && (data.success === true || data.success === 'true'));
         if (!ok) console.warn('Form was not accepted:', data);
         return { ok, message: data && data.message ? String(data.message) : '' };
-      } catch (err) {
+      }).catch(err => {
         console.warn('Form could not be sent:', err);
         return { ok: false, message: '' };
-      } finally {
-        formsBusy[key] = false;
-        if (btn) { btn.disabled = false; btn.innerHTML = original; }
-      }
+      });
+
+      return new Promise(resolve => {
+        let settled = false;
+        const timer = setTimeout(() => {
+          if (settled) return;
+          settled = true; restore();
+          resolve({ ok: true, pending: true });
+        }, FORM_WAIT_MS);
+        request.then(result => {
+          if (settled) { // the visitor was already told it is being sent: only speak up if it failed
+            if (!result.ok) showToast("Your earlier message could not be confirmed. Please call the school helpline +92 333 2967949 to be sure we received it.");
+            return;
+          }
+          settled = true; clearTimeout(timer); restore();
+          resolve(result);
+        });
+      });
     }
 
     function formFailureMessage(result) {
@@ -1076,7 +1097,7 @@
       if (result.busy) return;
       if (!result.ok) { showToast(formFailureMessage(result)); return; }
       form.reset();
-      showToast("Thank you! Your inquiry has been sent. The school will contact you soon.");
+      showToast(result.pending ? "Thank you! Your inquiry is being sent to the school." : "Thank you! Your inquiry has been sent. The school will contact you soon.");
     }
 
     async function handleAdmissionSubmit(e) {
@@ -1088,7 +1109,7 @@
       closeAdmissionModal();
       form.reset();
       goToStep(1);
-      showToast("Thank you! Your admission application has been received. The school will contact you soon.");
+      showToast(result.pending ? "Thank you! Your admission application is being sent to the school." : "Thank you! Your admission application has been received. The school will contact you soon.");
     }
 
     async function handleVisitSubmit(e) {
@@ -1099,7 +1120,7 @@
       if (!result.ok) { showToast(formFailureMessage(result)); return; }
       closeVisitModal();
       form.reset();
-      showToast("Thank you! Your visit request has been sent. The school will contact you to confirm the date and time.");
+      showToast(result.pending ? "Thank you! Your visit request is being sent to the school." : "Thank you! Your visit request has been sent. The school will contact you to confirm the date and time.");
     }
 
     document.getElementById('inquiryForm').addEventListener('submit', handleInquirySubmit);
