@@ -24,6 +24,12 @@ These were reminders for the school team, not text for visitors:
 - "School management should confirm the official phone number, address, and opening hours before these details are published."
 - "The configured email delivery must be verified before launch."
 
+### Hero and About: three buttons
+Removed because they had nothing behind them yet. Add them back when the content exists:
+- **360° Virtual Walkthrough** (hero): needs a virtual tour or video.
+- **Download Institutional Prospectus** (About): needs the prospectus PDF.
+- **Explore Curriculum** (About): needs a curriculum page or section.
+
 ### Gallery: the four fixed photo groups
 STEM & Labs, Library, Sports & Activities, and Arts & Auditorium were removed because they used stock photos, not real school photos.
 
