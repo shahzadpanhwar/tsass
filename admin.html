@@ -106,13 +106,14 @@
       <nav class="hidden sm:flex flex-wrap gap-2 mb-6" aria-label="Admin sections">
         <button type="button" data-tab="notices" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-bullhorn mr-1.5"></i> Notices</button>
         <button type="button" data-tab="gallery" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-images mr-1.5"></i> Gallery</button>
+        <button type="button" data-tab="site" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-image mr-1.5"></i> Site photos</button>
         <button type="button" data-tab="subscribers" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-envelope-open-text mr-1.5"></i> Subscribers</button>
       </nav>
 
       <!-- ---------- NOTICES ---------- -->
       <section id="tab-notices" class="tab-panel space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
-          <h2 class="font-heading font-bold text-lg text-brand-navy mb-4">New notice</h2>
+          <h2 id="noticeFormTitle" class="font-heading font-bold text-lg text-brand-navy mb-4 scroll-mt-24">New notice</h2>
           <form id="noticeForm" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -137,6 +138,7 @@
             <div class="flex flex-wrap items-center gap-4">
               <label class="flex items-center gap-2 text-sm text-slate-700"><input id="noticePublished" type="checkbox" checked class="rounded border-slate-300"> Publish immediately</label>
               <button id="noticeSubmitBtn" type="submit" class="px-5 py-3 rounded-lg bg-brand-crimson hover:bg-brand-crimsonDark text-white text-xs font-bold transition-colors disabled:opacity-60"><i class="fa-solid fa-paper-plane mr-1"></i> Save notice</button>
+              <button id="noticeCancelEdit" type="button" class="hidden px-5 py-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Cancel edit</button>
               <span class="text-xs text-slate-500">Drafts stay hidden from visitors.</span>
             </div>
           </form>
@@ -154,7 +156,7 @@
       <!-- ---------- GALLERY ---------- -->
       <section id="tab-gallery" class="tab-panel hidden space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
-          <h2 class="font-heading font-bold text-lg text-brand-navy mb-1">Add photos &amp; details</h2>
+          <h2 id="galleryFormTitle" class="font-heading font-bold text-lg text-brand-navy mb-1 scroll-mt-24">Add photos &amp; details</h2>
           <p class="text-xs text-slate-500 mb-4">Add photos from an event, session, activity, celebration, or school occasion.</p>
           <form id="galleryForm" class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div class="md:col-span-2">
@@ -180,10 +182,11 @@
               <label for="galleryDescription" class="block text-xs font-bold text-slate-700 mb-1.5">Short description</label>
               <textarea id="galleryDescription" rows="3" maxlength="1000" placeholder="Write a short description about what happened…" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none text-sm resize-none"></textarea>
             </div>
+            <div id="galleryExisting" class="hidden md:col-span-2"></div>
             <div class="md:col-span-2">
               <label for="galleryImages" class="block text-xs font-bold text-slate-700 mb-1.5">Upload images *</label>
               <input id="galleryImages" type="file" accept="image/*" multiple required class="w-full px-4 py-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-brand-navy file:text-white file:text-xs file:font-bold">
-              <p class="text-[11px] text-slate-400 mt-1.5">Select several images at once. Each image must be 8 MB or smaller.</p>
+              <p class="text-[11px] text-slate-400 mt-1.5">Select several images at once. Each image must be 8 MB or smaller. When editing, new photos are added to the current ones.</p>
             </div>
             <div class="md:col-span-2 flex flex-wrap items-center gap-3">
               <button id="galleryBtn" type="submit" class="px-6 py-3 rounded-lg bg-brand-navy hover:bg-brand-navyLight text-white text-xs font-bold transition-colors flex items-center gap-2 disabled:opacity-60"><i class="fa-solid fa-cloud-arrow-up text-brand-gold"></i> <span>Add to gallery</span></button>
@@ -199,6 +202,12 @@
           </div>
           <div id="galleryList" class="grid grid-cols-1 md:grid-cols-2 gap-4"><p class="text-sm text-slate-500">Loading…</p></div>
         </div>
+      </section>
+
+      <!-- ---------- SITE PHOTOS ---------- -->
+      <section id="tab-site" class="tab-panel hidden">
+        <p id="siteMsg" class="hidden text-sm text-slate-600 bg-white border border-slate-200 rounded-lg p-3 mb-4"></p>
+        <div id="siteCards" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </section>
 
       <!-- ---------- SUBSCRIBERS ---------- -->
@@ -230,9 +239,10 @@
     </main>
 
     <!-- Phone app bottom navigation -->
-    <nav id="bottomNav" class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 grid grid-cols-3" aria-label="Admin sections">
+    <nav id="bottomNav" class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 grid grid-cols-4" aria-label="Admin sections">
       <button type="button" data-tab="notices" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-bullhorn text-lg"></i>Notices</button>
       <button type="button" data-tab="gallery" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-images text-lg"></i>Gallery</button>
+      <button type="button" data-tab="site" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-image text-lg"></i>Photos</button>
       <button type="button" data-tab="subscribers" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-envelope-open-text text-lg"></i>Subscribers</button>
     </nav>
   </div>
@@ -295,6 +305,7 @@
         switchTab(currentTab);
         loadNotices();
         loadGallery();
+        loadSitePhotos();
         loadSubscribers();
       } else {
         $('dashView').classList.add('hidden');
@@ -353,8 +364,20 @@
     document.querySelectorAll('.tab-btn, .bnav-btn').forEach(b => b.addEventListener('click', () => { switchTab(b.dataset.tab); window.scrollTo(0, 0); }));
 
     // ------------------------------------------------------------------
-    // Notices
+    // Notices (add, edit, publish / unpublish, delete)
     // ------------------------------------------------------------------
+    let noticeMap = {};
+    let editingNoticeId = null;
+
+    function resetNoticeForm() {
+      editingNoticeId = null;
+      $('noticeForm').reset();
+      $('noticePublished').checked = true;
+      $('noticeFormTitle').textContent = 'New notice';
+      $('noticeSubmitBtn').innerHTML = '<i class="fa-solid fa-paper-plane mr-1"></i> Save notice';
+      $('noticeCancelEdit').classList.add('hidden');
+    }
+
     async function loadNotices() {
       const list = $('noticeList');
       const { data, error } = await sb.from('school_notices')
@@ -368,6 +391,8 @@
         console.error(error);
         return;
       }
+      noticeMap = {};
+      data.forEach(n => { noticeMap[n.id] = n; });
       $('noticeCount').textContent = '(' + data.length + ')';
       if (!data.length) { list.innerHTML = '<p class="text-sm text-slate-500">No notices yet. Add the first one above.</p>'; return; }
       list.innerHTML = data.map(n => `
@@ -380,6 +405,7 @@
           <h3 class="font-heading font-bold text-brand-navy">${esc(n.title)}</h3>
           <p class="mt-1 text-sm text-slate-600 whitespace-pre-line line-clamp-3">${esc(n.body)}</p>
           <div class="mt-3 flex flex-wrap items-center gap-4 text-xs font-bold">
+            <button type="button" data-act="edit" data-id="${esc(n.id)}" class="text-brand-navy hover:underline"><i class="fa-regular fa-pen-to-square mr-1"></i> Edit</button>
             <button type="button" data-act="toggle" data-id="${esc(n.id)}" data-published="${n.is_published ? '1' : '0'}" class="text-brand-navy hover:underline">${n.is_published ? '<i class="fa-regular fa-eye-slash mr-1"></i> Unpublish' : '<i class="fa-regular fa-eye mr-1"></i> Publish'}</button>
             <button type="button" data-act="delete" data-id="${esc(n.id)}" class="text-red-700 hover:underline"><i class="fa-regular fa-trash-can mr-1"></i> Delete</button>
           </div>
@@ -390,10 +416,25 @@
       const btn = e.target.closest('button[data-act]');
       if (!btn) return;
       const id = btn.dataset.id;
+      if (btn.dataset.act === 'edit') {
+        const n = noticeMap[id];
+        if (!n) return;
+        editingNoticeId = id;
+        $('noticeTitle').value = n.title || '';
+        $('noticeBody').value = n.body || '';
+        $('noticeCategory').value = n.category || 'general';
+        $('noticePublished').checked = !!n.is_published;
+        $('noticeFormTitle').textContent = 'Edit notice';
+        $('noticeSubmitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk mr-1"></i> Save changes';
+        $('noticeCancelEdit').classList.remove('hidden');
+        $('noticeFormTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
       if (btn.dataset.act === 'delete') {
         if (!confirm('Delete this notice? This cannot be undone.')) return;
         const { error } = await sb.from('school_notices').delete().eq('id', id);
         if (error) return handleError(error, 'Could not delete the notice.');
+        if (editingNoticeId === id) resetNoticeForm();
         toast('Notice deleted.');
       } else {
         const publish = btn.dataset.published !== '1';
@@ -414,24 +455,81 @@
       if (!title || !body) { toast('Please enter both a title and details.'); return; }
       const btn = $('noticeSubmitBtn');
       btn.disabled = true;
-      const { error } = await sb.from('school_notices').insert({
-        title, body, category, is_published: published,
-        published_at: published ? new Date().toISOString() : null
-      });
+      let error;
+      if (editingNoticeId) {
+        const prev = noticeMap[editingNoticeId] || {};
+        // Keep the original publish date if it was already published
+        const published_at = published ? (prev.is_published && prev.published_at ? prev.published_at : new Date().toISOString()) : null;
+        ({ error } = await sb.from('school_notices').update({ title, body, category, is_published: published, published_at }).eq('id', editingNoticeId));
+      } else {
+        ({ error } = await sb.from('school_notices').insert({
+          title, body, category, is_published: published,
+          published_at: published ? new Date().toISOString() : null
+        }));
+      }
       btn.disabled = false;
       if (error) return handleError(error, 'Notice was not saved. Check that the Supabase SQL setup is complete.');
-      e.target.reset();
-      $('noticePublished').checked = true;
-      toast(published ? 'Notice published successfully.' : 'Notice saved as a draft.');
+      const wasEditing = !!editingNoticeId;
+      resetNoticeForm();
+      toast(wasEditing ? 'Notice updated.' : (published ? 'Notice published successfully.' : 'Notice saved as a draft.'));
       loadNotices();
     });
+    $('noticeCancelEdit').addEventListener('click', resetNoticeForm);
     $('noticeRefresh').addEventListener('click', loadNotices);
 
     // ------------------------------------------------------------------
-    // Gallery
+    // Gallery (add, edit, remove)
     // ------------------------------------------------------------------
     const normImage = img => typeof img === 'string' ? { url: img, path: null } : { url: img?.url || '', path: img?.path || null };
     const fileSafe = name => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    let galleryMap = {};
+    let editingPost = null; // { id, kept: [{url, path}], removed: [paths] }
+
+    function renderEditImages() {
+      const box = $('galleryExisting');
+      if (!editingPost) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+      box.classList.remove('hidden');
+      box.innerHTML = '<p class="text-xs font-bold text-slate-700 mb-2">Current photos (tap &times; to remove one)</p>' +
+        (editingPost.kept.length
+          ? '<div class="grid grid-cols-3 sm:grid-cols-5 gap-3">' + editingPost.kept.map((im, i) => `
+            <div class="relative"><img src="${esc(safeUrl(im.url))}" alt="" class="w-full h-20 object-cover rounded-lg bg-slate-100">
+            <button type="button" data-rm="${i}" aria-label="Remove this photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-sm font-bold leading-none">&times;</button></div>`).join('') + '</div>'
+          : '<p class="text-xs text-amber-700">All current photos are removed. Add at least one new photo below.</p>');
+    }
+    $('galleryExisting').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-rm]');
+      if (!btn || !editingPost) return;
+      const [gone] = editingPost.kept.splice(Number(btn.dataset.rm), 1);
+      if (gone && gone.path) editingPost.removed.push(gone.path);
+      renderEditImages();
+    });
+
+    function resetGalleryForm() {
+      editingPost = null;
+      $('galleryForm').reset();
+      $('galleryImages').required = true;
+      $('galleryFormTitle').innerHTML = 'Add photos &amp; details';
+      $('galleryBtn').querySelector('span').textContent = 'Add to gallery';
+      $('galleryClear').textContent = 'Clear';
+      renderEditImages();
+    }
+
+    function startEditPost(id) {
+      const p = galleryMap[id];
+      if (!p) return;
+      editingPost = { id, kept: (p.images || []).map(normImage).filter(i => safeUrl(i.url)), removed: [] };
+      $('galleryTitle').value = p.title || '';
+      $('galleryCategory').value = p.category || 'events';
+      $('galleryDate').value = p.event_date || '';
+      $('galleryDescription').value = p.description || '';
+      $('galleryImages').value = '';
+      $('galleryImages').required = false;
+      $('galleryFormTitle').textContent = 'Edit gallery post';
+      $('galleryBtn').querySelector('span').textContent = 'Save changes';
+      $('galleryClear').textContent = 'Cancel edit';
+      renderEditImages();
+      $('galleryFormTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     async function loadGallery() {
       const list = $('galleryList');
@@ -444,6 +542,8 @@
         console.error(error);
         return;
       }
+      galleryMap = {};
+      data.forEach(p => { galleryMap[p.id] = p; });
       $('galleryCount').textContent = '(' + data.length + ')';
       if (!data.length) { list.innerHTML = '<p class="text-sm text-slate-500 md:col-span-2">No gallery posts yet. Add the first one above.</p>'; return; }
       list.innerHTML = data.map(p => {
@@ -458,15 +558,19 @@
           </div>
           <h3 class="font-heading font-bold text-brand-navy">${esc(p.title)}</h3>
           <p class="mt-1 text-xs text-slate-500 line-clamp-2">${esc(p.description || '')}</p>
-          <button type="button" data-id="${esc(p.id)}" class="mt-3 text-xs font-bold text-red-700 hover:underline"><i class="fa-regular fa-trash-can mr-1"></i> Remove this post</button>
+          <div class="mt-3 flex flex-wrap items-center gap-4 text-xs font-bold">
+            <button type="button" data-act="edit" data-id="${esc(p.id)}" class="text-brand-navy hover:underline"><i class="fa-regular fa-pen-to-square mr-1"></i> Edit</button>
+            <button type="button" data-act="delete" data-id="${esc(p.id)}" class="text-red-700 hover:underline"><i class="fa-regular fa-trash-can mr-1"></i> Remove this post</button>
+          </div>
         </article>`;
       }).join('');
     }
 
     $('galleryList').addEventListener('click', async e => {
-      const btn = e.target.closest('button[data-id]');
+      const btn = e.target.closest('button[data-act]');
       if (!btn) return;
       const id = btn.dataset.id;
+      if (btn.dataset.act === 'edit') { startEditPost(id); return; }
       if (!confirm('Remove this gallery post and its images from the cloud?')) return;
       const { data: post, error: readError } = await sb.from('gallery_posts').select('images').eq('id', id).single();
       if (readError) return handleError(readError, 'Could not find that gallery post.');
@@ -474,6 +578,7 @@
       if (paths.length) await sb.storage.from(GALLERY_BUCKET).remove(paths);
       const { error } = await sb.from('gallery_posts').delete().eq('id', id);
       if (error) return handleError(error, 'Could not remove the gallery post.');
+      if (editingPost && editingPost.id === id) resetGalleryForm();
       toast('Gallery post removed.');
       loadGallery();
     });
@@ -485,13 +590,16 @@
       const date = $('galleryDate').value;
       const description = $('galleryDescription').value.trim();
       const files = Array.from($('galleryImages').files || []);
+      const editing = editingPost;
 
-      if (!title || !files.length) { toast('Please enter a title and select at least one image.'); return; }
+      if (!title) { toast('Please enter a title.'); return; }
+      if ((editing ? editing.kept.length : 0) + files.length < 1) { toast('A post needs at least one photo.'); return; }
       if (files.some(f => !f.type.startsWith('image/'))) { toast('Only image files are allowed.'); return; }
       if (files.some(f => f.size > 8 * 1024 * 1024)) { toast('Each image must be 8 MB or smaller.'); return; }
 
       const btn = $('galleryBtn');
       const label = btn.querySelector('span');
+      const idleLabel = editing ? 'Save changes' : 'Add to gallery';
       btn.disabled = true;
       const uploaded = [];
       try {
@@ -504,22 +612,31 @@
           const { data: pub } = sb.storage.from(GALLERY_BUCKET).getPublicUrl(path);
           uploaded.push({ path, url: pub.publicUrl });
         }
-        const { error: insErr } = await sb.from('gallery_posts').insert({
-          title, event_date: date || null, category, description: description || null, images: uploaded
-        });
-        if (insErr) throw insErr;
-        e.target.reset();
-        toast('Gallery post uploaded successfully.');
+        if (editing) {
+          const { error: updErr } = await sb.from('gallery_posts').update({
+            title, event_date: date || null, category, description: description || null,
+            images: [...editing.kept, ...uploaded]
+          }).eq('id', editing.id);
+          if (updErr) throw updErr;
+          if (editing.removed.length) await sb.storage.from(GALLERY_BUCKET).remove(editing.removed);
+        } else {
+          const { error: insErr } = await sb.from('gallery_posts').insert({
+            title, event_date: date || null, category, description: description || null, images: uploaded
+          });
+          if (insErr) throw insErr;
+        }
+        resetGalleryForm();
+        toast(editing ? 'Gallery post updated.' : 'Gallery post uploaded successfully.');
         loadGallery();
       } catch (err) {
         if (uploaded.length) await sb.storage.from(GALLERY_BUCKET).remove(uploaded.map(u => u.path));
-        await handleError(err, 'Upload failed. Check your Supabase policies and try again.');
+        await handleError(err, 'Could not save the gallery post. Check your Supabase policies and try again.');
       } finally {
         btn.disabled = false;
-        label.textContent = 'Add to gallery';
+        label.textContent = idleLabel;
       }
     });
-    $('galleryClear').addEventListener('click', () => $('galleryForm').reset());
+    $('galleryClear').addEventListener('click', resetGalleryForm);
     $('galleryRefresh').addEventListener('click', loadGallery);
 
     // ------------------------------------------------------------------
@@ -599,6 +716,111 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
+
+    // ------------------------------------------------------------------
+    // Site photos (main campus photo and director's photo)
+    // ------------------------------------------------------------------
+    const SITE_PHOTO_DEFS = [
+      { key: 'hero_photo', title: 'Main campus photo', hint: 'Shown at the top of the website (hero section). A wide or square photo of the main campus works best.' },
+      { key: 'director_photo', title: "Director's photo", hint: "Shown beside the director's message. A clear portrait photo works best." }
+    ];
+    let sitePhotos = {};
+
+    function buildSiteCards() {
+      $('siteCards').innerHTML = SITE_PHOTO_DEFS.map(d => `
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+          <h2 class="font-heading font-bold text-lg text-brand-navy">${d.title}</h2>
+          <p class="text-xs text-slate-500 mt-1 mb-4">${d.hint}</p>
+          <div class="rounded-xl bg-slate-100 border border-slate-200 overflow-hidden mb-3">
+            <img id="prev-${d.key}" alt="" class="hidden w-full h-56 object-cover">
+            <p id="note-${d.key}" class="p-4 text-xs text-slate-500">Loading…</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <label class="cursor-pointer px-4 py-2.5 rounded-lg bg-brand-navy hover:bg-brand-navyLight text-white text-xs font-bold">
+              <i class="fa-solid fa-cloud-arrow-up text-brand-gold mr-1"></i><span id="lbl-${d.key}">Choose new photo</span>
+              <input type="file" accept="image/*" data-key="${d.key}" class="hidden">
+            </label>
+            <button type="button" id="reset-${d.key}" data-reset="${d.key}" class="hidden px-4 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Use original photo</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function showSiteMsg(msg) { const el = $('siteMsg'); el.textContent = msg || ''; el.classList.toggle('hidden', !msg); }
+
+    async function loadSitePhotos() {
+      showSiteMsg('');
+      const { data, error } = await sb.from('site_settings').select('key,value').in('key', SITE_PHOTO_DEFS.map(d => d.key));
+      if (error) {
+        console.error(error);
+        showSiteMsg(isMissingTable(error) ? 'The site settings table was not found. Run the site photos SQL setup in Supabase first.' : 'Could not load the site photos. Check your Supabase permissions.');
+        SITE_PHOTO_DEFS.forEach(d => { $('note-' + d.key).textContent = 'Unavailable until the setup is complete.'; });
+        return;
+      }
+      sitePhotos = {};
+      (data || []).forEach(r => { try { sitePhotos[r.key] = JSON.parse(r.value); } catch (_) {} });
+      SITE_PHOTO_DEFS.forEach(d => {
+        const cur = sitePhotos[d.key] && safeUrl(sitePhotos[d.key].url);
+        const img = $('prev-' + d.key);
+        if (cur) { img.src = cur; img.classList.remove('hidden'); } else { img.classList.add('hidden'); img.removeAttribute('src'); }
+        $('note-' + d.key).textContent = cur ? 'Custom photo in use on the website.' : 'The original built-in photo is in use.';
+        $('note-' + d.key).classList.toggle('hidden', !!cur);
+        $('reset-' + d.key).classList.toggle('hidden', !cur);
+      });
+    }
+
+    // Phone photos are large: shrink to at most 1600 px before uploading
+    async function compressImage(file, maxDim = 1600) {
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, maxDim / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(bmp.width * scale);
+      c.height = Math.round(bmp.height * scale);
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('compress failed')), 'image/jpeg', 0.86));
+    }
+
+    async function uploadSitePhoto(key, file) {
+      if (!file.type.startsWith('image/')) { toast('Please choose an image file.'); return; }
+      if (file.size > 20 * 1024 * 1024) { toast('That image is too large (20 MB maximum).'); return; }
+      const lbl = $('lbl-' + key);
+      lbl.textContent = 'Uploading…';
+      try {
+        let blob;
+        try { blob = await compressImage(file); } catch (_) { blob = file; }
+        const path = 'site/' + key + '-' + Date.now() + '.jpg';
+        const { error: upErr } = await sb.storage.from(GALLERY_BUCKET).upload(path, blob, { cacheControl: '3600', upsert: false, contentType: blob.type || file.type });
+        if (upErr) throw upErr;
+        const { data: pub } = sb.storage.from(GALLERY_BUCKET).getPublicUrl(path);
+        const old = sitePhotos[key];
+        const { error } = await sb.from('site_settings').upsert({ key, value: JSON.stringify({ url: pub.publicUrl, path }), updated_at: new Date().toISOString() });
+        if (error) { await sb.storage.from(GALLERY_BUCKET).remove([path]); throw error; }
+        if (old && old.path) await sb.storage.from(GALLERY_BUCKET).remove([old.path]);
+        toast('Photo updated. It now shows on the website.');
+        await loadSitePhotos();
+      } catch (err) {
+        await handleError(err, 'The photo could not be saved. Check that the site photos SQL setup is complete.');
+      } finally {
+        lbl.textContent = 'Choose new photo';
+      }
+    }
+
+    $('siteCards').addEventListener('change', e => {
+      const inp = e.target.closest('input[data-key]');
+      if (inp && inp.files[0]) uploadSitePhoto(inp.dataset.key, inp.files[0]).finally(() => { inp.value = ''; });
+    });
+    $('siteCards').addEventListener('click', async e => {
+      const btn = e.target.closest('button[data-reset]');
+      if (!btn) return;
+      const key = btn.dataset.reset;
+      if (!confirm('Go back to the original photo that came with the website?')) return;
+      const old = sitePhotos[key];
+      const { error } = await sb.from('site_settings').delete().eq('key', key);
+      if (error) return handleError(error, 'Could not reset the photo.');
+      if (old && old.path) await sb.storage.from(GALLERY_BUCKET).remove([old.path]);
+      toast('The original photo is back on the website.');
+      loadSitePhotos();
+    });
+    buildSiteCards();
 
     // ------------------------------------------------------------------
     // Installable app
