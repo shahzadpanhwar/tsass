@@ -106,7 +106,7 @@
       <nav class="hidden sm:flex flex-wrap gap-2 mb-6" aria-label="Admin sections">
         <button type="button" data-tab="notices" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-bullhorn mr-1.5"></i> Notices</button>
         <button type="button" data-tab="gallery" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-images mr-1.5"></i> Gallery</button>
-        <button type="button" data-tab="site" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-image mr-1.5"></i> Site photos</button>
+        <button type="button" data-tab="site" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-sliders mr-1.5"></i> Site</button>
         <button type="button" data-tab="subscribers" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-envelope-open-text mr-1.5"></i> Subscribers</button>
       </nav>
 
@@ -207,6 +207,25 @@
       <!-- ---------- SITE PHOTOS ---------- -->
       <section id="tab-site" class="tab-panel hidden">
         <p id="siteMsg" class="hidden text-sm text-slate-600 bg-white border border-slate-200 rounded-lg p-3 mb-4"></p>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-6">
+          <h2 class="font-heading font-bold text-lg text-brand-navy">Admissions tag</h2>
+          <p class="text-xs text-slate-500 mt-1 mb-4">The red tag at the very top of the website, for example &ldquo;Admissions 2026-2027&rdquo;. Change the wording, or hide it when it is not needed.</p>
+          <div class="rounded-xl bg-brand-navy p-4 mb-4 min-h-[3.5rem] flex items-center">
+            <span id="tagPreview" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-crimson text-white tracking-wider uppercase"><i class="fa-solid fa-bell mr-1.5 text-xs"></i><span id="tagPreviewText"></span></span>
+            <span id="tagHiddenNote" class="hidden text-xs text-slate-300">The tag is hidden on the website.</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+            <div>
+              <label for="tagText" class="block text-xs font-bold text-slate-700 mb-1.5">Tag text</label>
+              <input id="tagText" type="text" maxlength="40" placeholder="Admissions 2026-2027" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none text-sm">
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-700 pb-3"><input id="tagVisible" type="checkbox" checked class="rounded border-slate-300"> Show the tag on the website</label>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <button id="tagSave" type="button" class="px-5 py-3 rounded-lg bg-brand-crimson hover:bg-brand-crimsonDark text-white text-xs font-bold transition-colors disabled:opacity-60"><i class="fa-solid fa-floppy-disk mr-1"></i> Save tag</button>
+            <button id="tagReset" type="button" class="px-4 py-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Use original tag</button>
+          </div>
+        </div>
         <div id="siteCards" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </section>
 
@@ -242,7 +261,7 @@
     <nav id="bottomNav" class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 grid grid-cols-4" aria-label="Admin sections">
       <button type="button" data-tab="notices" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-bullhorn text-lg"></i>Notices</button>
       <button type="button" data-tab="gallery" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-images text-lg"></i>Gallery</button>
-      <button type="button" data-tab="site" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-image text-lg"></i>Photos</button>
+      <button type="button" data-tab="site" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-sliders text-lg"></i>Site</button>
       <button type="button" data-tab="subscribers" class="bnav-btn py-2.5 flex flex-col items-center gap-0.5 text-[11px] font-bold"><i class="fa-solid fa-envelope-open-text text-lg"></i>Subscribers</button>
     </nav>
   </div>
@@ -749,7 +768,7 @@
 
     async function loadSitePhotos() {
       showSiteMsg('');
-      const { data, error } = await sb.from('site_settings').select('key,value').in('key', SITE_PHOTO_DEFS.map(d => d.key));
+      const { data, error } = await sb.from('site_settings').select('key,value').in('key', SITE_PHOTO_DEFS.map(d => d.key).concat('admissions_tag'));
       if (error) {
         console.error(error);
         showSiteMsg(isMissingTable(error) ? 'The site settings table was not found. Run the site photos SQL setup in Supabase first.' : 'Could not load the site photos. Check your Supabase permissions.');
@@ -758,6 +777,7 @@
       }
       sitePhotos = {};
       (data || []).forEach(r => { try { sitePhotos[r.key] = JSON.parse(r.value); } catch (_) {} });
+      applyTagToForm();
       SITE_PHOTO_DEFS.forEach(d => {
         const cur = sitePhotos[d.key] && safeUrl(sitePhotos[d.key].url);
         const img = $('prev-' + d.key);
@@ -821,6 +841,43 @@
       loadSitePhotos();
     });
     buildSiteCards();
+
+    // Admissions tag (the red tag at the top of the website)
+    const DEFAULT_TAG = 'Admissions 2026-2027';
+    function updateTagPreview() {
+      const visible = $('tagVisible').checked;
+      $('tagPreview').classList.toggle('hidden', !visible);
+      $('tagHiddenNote').classList.toggle('hidden', visible);
+      $('tagPreviewText').textContent = $('tagText').value.trim() || DEFAULT_TAG;
+    }
+    function applyTagToForm() {
+      const t = sitePhotos.admissions_tag;
+      $('tagText').value = t && typeof t.text === 'string' ? t.text : DEFAULT_TAG;
+      $('tagVisible').checked = !(t && t.visible === false);
+      updateTagPreview();
+    }
+    $('tagText').addEventListener('input', updateTagPreview);
+    $('tagVisible').addEventListener('change', updateTagPreview);
+    $('tagSave').addEventListener('click', async () => {
+      const text = $('tagText').value.trim();
+      const visible = $('tagVisible').checked;
+      if (visible && !text) { toast('Please type the tag text, or untick "Show the tag".'); return; }
+      const btn = $('tagSave');
+      btn.disabled = true;
+      const { error } = await sb.from('site_settings').upsert({ key: 'admissions_tag', value: JSON.stringify({ text, visible }), updated_at: new Date().toISOString() });
+      btn.disabled = false;
+      if (error) return handleError(error, 'The tag could not be saved. Check that the site settings SQL setup is complete.');
+      toast(visible ? 'Tag saved. It now shows on the website.' : 'Tag saved. It is hidden on the website.');
+      loadSitePhotos();
+    });
+    $('tagReset').addEventListener('click', async () => {
+      if (!confirm('Go back to the original tag text?')) return;
+      const { error } = await sb.from('site_settings').delete().eq('key', 'admissions_tag');
+      if (error) return handleError(error, 'Could not reset the tag.');
+      toast('The original tag is back on the website.');
+      loadSitePhotos();
+    });
+    applyTagToForm();
 
     // ------------------------------------------------------------------
     // Installable app
