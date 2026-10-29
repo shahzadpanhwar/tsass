@@ -209,7 +209,7 @@
         <p id="siteMsg" class="hidden text-sm text-slate-600 bg-white border border-slate-200 rounded-lg p-3 mb-4"></p>
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-6">
           <h2 class="font-heading font-bold text-lg text-brand-navy">Admissions tag</h2>
-          <p class="text-xs text-slate-500 mt-1 mb-4">The red tag at the very top of the website, for example &ldquo;Admissions 2026-2027&rdquo;. Change the wording, or hide it when it is not needed.</p>
+          <p class="text-xs text-slate-500 mt-1 mb-4">The red tag at the very top of the website, for example &ldquo;Admissions 2026-2027&rdquo;. Change the wording, or hide it when it is not needed. Changes appear on the website straight away.</p>
           <div class="rounded-xl bg-brand-navy p-4 mb-4 min-h-[3.5rem] flex items-center">
             <span id="tagPreview" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-crimson text-white tracking-wider uppercase"><i class="fa-solid fa-bell mr-1.5 text-xs"></i><span id="tagPreviewText"></span></span>
             <span id="tagHiddenNote" class="hidden text-xs text-slate-300">The tag is hidden on the website.</span>
@@ -223,7 +223,6 @@
           </div>
           <div class="flex flex-wrap gap-2 mt-4">
             <button id="tagSave" type="button" class="px-5 py-3 rounded-lg bg-brand-crimson hover:bg-brand-crimsonDark text-white text-xs font-bold transition-colors disabled:opacity-60"><i class="fa-solid fa-floppy-disk mr-1"></i> Save tag</button>
-            <button id="tagReset" type="button" class="px-4 py-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Use original tag</button>
           </div>
         </div>
         <div id="siteCards" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
@@ -868,13 +867,6 @@
       btn.disabled = false;
       if (error) return handleError(error, 'The tag could not be saved. Check that the site settings SQL setup is complete.');
       toast(visible ? 'Tag saved. It now shows on the website.' : 'Tag saved. It is hidden on the website.');
-      loadSitePhotos();
-    });
-    $('tagReset').addEventListener('click', async () => {
-      if (!confirm('Go back to the original tag text?')) return;
-      const { error } = await sb.from('site_settings').delete().eq('key', 'admissions_tag');
-      if (error) return handleError(error, 'Could not reset the tag.');
-      toast('The original tag is back on the website.');
       loadSitePhotos();
     });
     applyTagToForm();

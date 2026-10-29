@@ -89,7 +89,7 @@
   <div class="bg-brand-navy text-white text-xs sm:text-sm py-2 px-4 border-b border-white/10 relative z-40">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
       <div class="flex items-center space-x-2 overflow-hidden w-full md:w-auto min-w-0">
-        <span id="admissionsTag" class="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-crimson text-white tracking-wider uppercase animate-pulse">
+        <span id="admissionsTag" style="visibility:hidden" class="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-crimson text-white tracking-wider uppercase animate-pulse">
           <i class="fa-solid fa-bell mr-1.5 text-xs"></i><span id="admissionsTagText">Admissions 2026-2027</span>
         </span>
       </div>
@@ -975,6 +975,10 @@
 
     // Site settings managed from the admin panel: main campus photo, director photo and the admissions tag.
     // The built-in photos and the original tag text are the fallback.
+    // The tag stays invisible until the saved text arrives, so the original wording never flashes first.
+    function revealTag() { const t = document.getElementById('admissionsTag'); if (t) t.style.visibility = ''; }
+    setTimeout(revealTag, 3000); // safety: if the database is slow or unreachable, show the original tag
+
     async function applySitePhotos() {
       try {
         const { data, error } = await supabaseClient.from('site_settings').select('key,value').in('key', ['hero_photo', 'director_photo', 'admissions_tag']);
@@ -993,6 +997,7 @@
           if (img && /^https:\/\//i.test(v.url || '')) img.src = v.url;
         });
       } catch (_) { /* keep the built-in content */ }
+      finally { revealTag(); }
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
